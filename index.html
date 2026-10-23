@@ -546,12 +546,16 @@ function fitResults(){
   ["mousedown","wheel","touchstart"].forEach(ev => map.getContainer().addEventListener(ev, () => { touched = true; }, {passive:true}));
   new ResizeObserver(() => { map.invalidateSize(); if (!touched) fitResults(); }).observe($("map"));
   [100, 500, 1500].forEach(t => setTimeout(() => { map.invalidateSize(); if (!touched) fitResults(); }, t));
-  // Hash routing : #fiche=codeAIOT ouvre directement la fiche (nouvel onglet)
-  const hashMatch = location.hash.match(/^#fiche=(.+)$/);
-  if (hashMatch) {
-    const ficheId = decodeURIComponent(hashMatch[1]);
+})();
+// Hash routing : #fiche=codeAIOT ouvre directement la fiche (nouvel onglet)
+(function checkHash(){
+  const m = location.hash.match(/^#fiche=(.+)$/);
+  if (m) {
     document.body.classList.add("fiche-only");
-    setTimeout(() => openFiche(ficheId), 200);
+    const id = decodeURIComponent(m[1]);
+    // Attendre que les données soient chargées et le DOM prêt
+    const tryOpen = () => { if (DATA.length) openFiche(id); else setTimeout(tryOpen, 100); };
+    setTimeout(tryOpen, 300);
   }
 })();
 </script>
